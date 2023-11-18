@@ -36,8 +36,9 @@ def game_loop(difficulty):
 
         screen.fill(BLACK)
 
-        draw_text(f"Game in {difficulty} Mode", font, WHITE, screen, 250, 100)
+        draw_text(f"Game in {difficulty} Mode", font, WHITE, screen, 280, 100)
         draw_text("Press ESC to go back to Home Screen", font, WHITE, screen, 200, 200)
+        draw_text("Back", font, WHITE, screen, 700, 0)
 
         pygame.display.flip()
 
@@ -45,15 +46,24 @@ def game_loop(difficulty):
         if keys[pygame.K_ESCAPE]:
             game_running = False
 
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+
+                # Check if the mouse is clicked in a specific area
+                if 690 < mouse_x < 780 and -10 < mouse_y < 20:
+                    game_running = False
+
 # Home Screen Loop
 while True:
     screen.fill(BLACK)
 
     # Teks di home screen
     draw_text("Welcome to the Game!", font, WHITE, screen, 250, 100)
-    draw_text("Play Game", font, WHITE, screen, 350, 200)
-    draw_text("Easy", font, WHITE, screen, 370, 300)
-    draw_text("Hard", font, WHITE, screen, 370, 350)
+    draw_text("Play Game", font, WHITE, screen, 330, 200)
+    draw_text("Quit", font, WHITE, screen, 370, 250)
+    # draw_text("Easy", font, WHITE, screen, 370, 300)
+    # draw_text("Hard", font, WHITE, screen, 370, 350)
 
     # Memperbarui tampilan
     pygame.display.flip()
@@ -66,10 +76,14 @@ while True:
             mouse_x, mouse_y = pygame.mouse.get_pos()
 
             # Cek apakah mouse berada di area Easy
-            if 370 < mouse_x < 470 and 300 < mouse_y < 330:
-                print("Easy Mode Selected")
-                game_loop("Easy")
+            if 370 < mouse_x < 470 and 190 < mouse_y < 230:
+                print("Play")
+                game_loop("Play")
+            elif 330 < mouse_x < 500 and 240 < mouse_y < 260:
+                pygame.quit()  # Fix the typo here
+                sys.exit()
+
             # Cek apakah mouse berada di area Hard
-            elif 370 < mouse_x < 470 and 350 < mouse_y < 380:
-                print("Hard Mode Selected")
-                game_loop("Hard")
+            # elif 370 < mouse_x < 470 and 350 < mouse_y < 380:
+            #     print("Hard Mode Selected")
+            #     game_loop("Hard")
