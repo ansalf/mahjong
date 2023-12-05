@@ -12,8 +12,6 @@ COL = 17
 TILE_ROW = 50
 TILE_COL = 64
 
-
-
 class Tile:
     def __init__(self, name, img):
         self.name = name
