@@ -45,33 +45,6 @@ class Operation:
 
 
 class Board:
-
-    # def __init__(self):
-
-    #     self.tile_in_hand = [] # tiles in hand
-    #     self.tile_list = [] # tiles on board
-    #     self.chosen = [] # tiles selected by player (two at most)
-    #     self.op_history = [] # operation history
-
-    #    # read all images
-    #     files = os.listdir('./res/tile')
-    #     for file in files:  # <-- Corrected line
-    #         for i in range(4):
-    #             path = os.path.join('./res/tile', file)
-    #             try:
-    #                 img = pygame.image.load(path)
-    #             except pygame.error as e:
-    #                 print(f"Error loading image {path}: {e}")
-    #                 continue
-    #             name = file.split('.')[0]
-    #             tile = Tile(name, img)
-    #             self.tile_list.append(tile)
-
-    #     # shuffle and store in col_list
-    #     random.shuffle(self.tile_list)
-    #     self.col_list = []
-    #     for i in range(0, len(self.tile_list), ROW):
-    #         self.col_list.append(self.tile_list[i:i+ROW])
     def __init__(self):
         # Your existing initialization code
         self.tile_in_hand = []  # tiles in hand

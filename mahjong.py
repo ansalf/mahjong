@@ -3,9 +3,13 @@ from pygame.locals import *
 import sys
 from board import Board  # Replace 'board' with the actual name of your module
 from pygame import time as pygame_time
+import pygame.mixer
+
 
 # Pygame initialization
 pygame.init()
+pygame.mixer.init()
+
 
 # Constants
 BLACK = (0, 0, 0)
@@ -25,6 +29,13 @@ sub_title = pygame.font.Font("./font/Montserrat-SemiBold.ttf", 35)
 font = pygame.font.Font("./font/Montserrat-Regular.ttf", 20)
 fontjam = pygame.font.Font("./font/Montserrat-SemiBold.ttf", 20)
 fontisi = pygame.font.Font("./font/Montserrat-SemiBold.ttf", 18)
+
+click_sound = pygame.mixer.Sound("./sound/mouse-click.mp3")
+game_over = pygame.mixer.Sound("./sound/game-over.wav")
+good_job= pygame.mixer.Sound("./sound/good-job.wav")
+pygame.mixer.music.load('./sound/backsound.mp3')
+pygame.mixer.music.set_volume(0.5)
+
 
 # Function to draw text on the screen
 def draw_text(text, font, color, surface, x, y):
@@ -67,6 +78,8 @@ def run_mahjong_game():
 
     start_time = pygame.time.get_ticks()  # Record the start time in milliseconds
     game_continue = True
+
+    pygame.mixer.music.play(-1)
 
     while game_continue:
         board = Board()
@@ -113,7 +126,8 @@ def run_mahjong_game():
 
                     for index in range(len(pressed_array)):
                         if pressed_array[index]:
-                            if index == 0:  # left
+                            if index == 0: 
+                                click_sound.play() # left
                                 if position[0] >= REPLAY_POS[0] and position[0] <= REPLAY_POS[0] + REPLAY[0] and \
                                         position[1] >= REPLAY_POS[1] and position[1] <= REPLAY_POS[1] + REPLAY[1]:
                                     restart = True
@@ -133,6 +147,18 @@ def run_mahjong_game():
                                 status = board.choose(position)
                             elif index == 2:  # right
                                 status = board.pop(position)
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_r:
+                        restart = True
+                    elif event.key == pygame.K_u:
+                        board.undo()
+                    elif event.key == pygame.K_h:
+                        status = -1
+                    elif event.key == pygame.K_s:
+                        board.shuffle_tiles()
+                    elif event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
 
             if restart:
                 status = 0
@@ -148,12 +174,15 @@ def run_mahjong_game():
 
             pygame.display.update()
 
+        pygame.mixer.music.stop()
+
         if restart:
             continue
 
         if status == 1:
             screen.blit(success, ((SCREEN_WIDTH - success.get_width()) // 2, (SCREEN_HEIGHT - success.get_height()) // 2))
             pygame.display.update()
+            good_job.play()
             game_continue = False
             pygame.time.delay(2000)  # Delay for 2000 milliseconds (2 seconds) to display the success screen
             return show_home_screen()
@@ -161,6 +190,7 @@ def run_mahjong_game():
         if status == -1 or elapsed_time >= 600:
             screen.blit(gameover, ((SCREEN_WIDTH - gameover.get_width()) // 2, (SCREEN_HEIGHT - gameover.get_height()) // 2))
             pygame.display.update()
+            game_over.play()
             game_continue = False
             pygame.time.delay(2000)  # Delay for 2000 milliseconds (2 seconds) to display the game over screen
             return show_home_screen()  # Return to home screen
@@ -173,6 +203,7 @@ def run_mahjong_game():
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     position = pygame.mouse.get_pos()
+                    click_sound.play()
                     if position[0] >= REPLAY_POS[0] and position[0] <= REPLAY_POS[0] + REPLAY[0] and \
                             position[1] >= REPLAY_POS[1] and position[1] <= REPLAY_POS[1] + REPLAY[1]:
                         flag = False
@@ -182,7 +213,6 @@ def run_mahjong_game():
                             position[1] >= HOME_POS[1] and position[1] <= HOME_POS[1] + HOME[1]:
                         status = -1 
                         break
-
 
 def show_instructions():
     SCREEN_SIZE = 980, 650
@@ -209,11 +239,14 @@ def show_instructions():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_h:
+                    show_home_screen()
                 if event.key == pygame.K_ESCAPE:
-                    show_instructions = False
+                    pygame.quit()
+                    sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
-
+                click_sound.play()
                 # Check if the mouse is clicked in a specific area to exit
                 if 690 < mouse_x < 780 and -10 < mouse_y < 20:
                     show_instructions = False
@@ -259,7 +292,7 @@ def show_home_screen():
 
     KELUAR = [60,60]
     KELUAR_POS = [380, 465]
-
+    
     # Set initial alpha values
     alpha_papantitle = 0
     alpha_tali = 0
@@ -270,48 +303,66 @@ def show_home_screen():
     # Use clock to control the fade-in speed
     clock = pygame.time.Clock()
 
+    start_time = pygame.time.get_ticks()  
+
     # Main loop for fade-in animation
+    # ... (previous code)
+
+# Main loop for fade-in animation
     fading_in = True
+    fade_animation_completed = False  # Flag to track whether fade-in animation is completed
+
     while fading_in:
         screen.fill(0)
         screen.blit(background, (0, 0))
 
-        # Increase alpha values gradually
-        alpha_papantitle += 5
-        alpha_tali += 5
-        alpha_start += 5
-        alpha_instruksi += 5
-        alpha_keluar += 5
+        screen.fill(0)
+        screen.blit(background, (0, 0))
 
-        # Apply alpha values to images
-        papantitle.set_alpha(alpha_papantitle)
-        tali.set_alpha(alpha_tali)
-        start.set_alpha(alpha_start)
-        instruksi.set_alpha(alpha_instruksi)
-        keluar.set_alpha(alpha_keluar)
+        current_time = pygame.time.get_ticks()  # Waktu saat ini
 
-        screen.blit(tali, (TALI_POS[0], TALI_POS[1]))
-        screen.blit(start, (START_POS[0], START_POS[1]))
-        screen.blit(instruksi, (INSTRUKSI_POS[0], INSTRUKSI_POS[1]))
-        screen.blit(keluar, (KELUAR_POS[0], KELUAR_POS[1]))
-        screen.blit(papantitle, (PAPANTITLE_POS[0], PAPANTITLE_POS[1]))
+        if current_time - start_time > 1000 and not fade_animation_completed:
+            # Increase alpha values gradually
+            alpha_tali += 5
+            alpha_start += 5
+            alpha_instruksi += 5
+            alpha_keluar += 5
 
-        # Text on the home screen
-        draw_text("Selamat Datang di Game Mahjong", title, BLACK, screen, 135, 130)
-        draw_text("Mulai", sub_title, BLACK, screen, 470, 260)
-        draw_text("Instruksi", sub_title, BLACK, screen, 440, 375)
-        draw_text("Keluar", sub_title, BLACK, screen, 460, 485)
+            # Apply alpha values to images
+            tali.set_alpha(alpha_tali)
+            start.set_alpha(alpha_start)
+            instruksi.set_alpha(alpha_instruksi)
+            keluar.set_alpha(alpha_keluar)
 
-        # Update display
-        pygame.display.flip()
+            screen.blit(tali, (TALI_POS[0], TALI_POS[1]))
+            screen.blit(start, (START_POS[0], START_POS[1]))
+            screen.blit(instruksi, (INSTRUKSI_POS[0], INSTRUKSI_POS[1]))
+            screen.blit(keluar, (KELUAR_POS[0], KELUAR_POS[1]))
 
-        clock.tick(30)  # Adjust the frames per second as needed
+            draw_text("Mulai", sub_title, BLACK, screen, 470, 260)
+            draw_text("Instruksi", sub_title, BLACK, screen, 440, 375)
+            draw_text("Keluar", sub_title, BLACK, screen, 460, 485)
+
+            alpha_papantitle += 5
+            papantitle.set_alpha(alpha_papantitle)
+            screen.blit(papantitle, (PAPANTITLE_POS[0], PAPANTITLE_POS[1]))
+            draw_text("Selamat Datang di Game Mahjong", title, BLACK, screen, 135, 130)
+
+            # Update display
+            pygame.display.flip()
+
+            clock.tick(30)  # Adjust the frames per second as needed
+
+            # Check if the fade-in animation is completed
+            if alpha_tali >= 255:
+                fade_animation_completed = True
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif fade_animation_completed and event.type == pygame.MOUSEBUTTONDOWN:
+                click_sound.play()
                 fading_in = False
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 if 915 < mouse_x < 975 and 90 < mouse_y < 150:
@@ -330,7 +381,16 @@ def show_home_screen():
                         KELUAR_POS[1] < mouse_y < KELUAR_POS[1] + keluar.get_height():
                     pygame.quit()
                     sys.exit()
-
+            elif fade_animation_completed and event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN or event.key == pygame.K_m or event.key == pygame.K_SPACE:  # Enter key
+                    print("Play")
+                    return True
+                elif event.key == pygame.K_i:  # 'i' key
+                    print("Instruction")
+                    show_instructions()
+                elif event.key == pygame.K_ESCAPE:  # Escape key
+                    pygame.quit()
+                    sys.exit()
 
 
 # Main program
