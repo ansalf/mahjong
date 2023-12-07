@@ -16,6 +16,7 @@ SCREEN_WIDTH = 980
 SCREEN_HEIGHT = 650
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
 background = pygame.image.load('./res/background.jpg')
 pygame.display.set_caption("Mahjong")
 
@@ -68,7 +69,6 @@ def run_mahjong_game():
     game_continue = True
 
     while game_continue:
-
         board = Board()
         status = 0
         restart = False
@@ -237,11 +237,11 @@ def show_instructions():
     # Ensure that the event queue is empty before exiting the function
     pygame.event.clear()
 
-# Function to show the home screen
+# Function to show the home screen with fade-in animation
 def show_home_screen():
-    papantitle= pygame.image.load('./res/papan_title.png')  # 60, 60
-    tali= pygame.image.load('./res/tali.png')  # 60, 60
-    start= pygame.image.load('./res/papan_sub.png')  # 60, 60
+    papantitle = pygame.image.load('./res/papan_title.png')  # 60, 60
+    tali = pygame.image.load('./res/tali.png')  # 60, 60
+    start = pygame.image.load('./res/papan_sub.png')  # 60, 60
     instruksi = pygame.image.load('./res/papan_sub.png')  # 60, 60
     keluar = pygame.image.load('./res/papan_sub.png')  # 60, 60
 
@@ -259,10 +259,37 @@ def show_home_screen():
 
     KELUAR = [60,60]
     KELUAR_POS = [380, 465]
-    
-    while True:
+
+    # Set initial alpha values
+    alpha_papantitle = 0
+    alpha_tali = 0
+    alpha_start = 0
+    alpha_instruksi = 0
+    alpha_keluar = 0
+
+    # Use clock to control the fade-in speed
+    clock = pygame.time.Clock()
+
+    # Main loop for fade-in animation
+    fading_in = True
+    while fading_in:
         screen.fill(0)
         screen.blit(background, (0, 0))
+
+        # Increase alpha values gradually
+        alpha_papantitle += 5
+        alpha_tali += 5
+        alpha_start += 5
+        alpha_instruksi += 5
+        alpha_keluar += 5
+
+        # Apply alpha values to images
+        papantitle.set_alpha(alpha_papantitle)
+        tali.set_alpha(alpha_tali)
+        start.set_alpha(alpha_start)
+        instruksi.set_alpha(alpha_instruksi)
+        keluar.set_alpha(alpha_keluar)
+
         screen.blit(tali, (TALI_POS[0], TALI_POS[1]))
         screen.blit(start, (START_POS[0], START_POS[1]))
         screen.blit(instruksi, (INSTRUKSI_POS[0], INSTRUKSI_POS[1]))
@@ -278,22 +305,15 @@ def show_home_screen():
         # Update display
         pygame.display.flip()
 
+        clock.tick(30)  # Adjust the frames per second as needed
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                fading_in = False
                 mouse_x, mouse_y = pygame.mouse.get_pos()
-
-                # # Check if the mouse is clicked in the "Play Game" area
-                # if 360 < mouse_x < 530 and 290 < mouse_y < 340:
-                    
-                # elif 400 < mouse_x < 585 and 350 < mouse_y < 380:
-                #     print("Instruction")
-                #     show_instructions()
-                # elif 455 < mouse_x < 585 and 400 < mouse_y < 440:
-                #     pygame.quit()
-                #     sys.exit()
                 if 915 < mouse_x < 975 and 90 < mouse_y < 150:
                     print("Home")
                     pygame.event.clear()  # Clear the event queue
@@ -311,6 +331,8 @@ def show_home_screen():
                     pygame.quit()
                     sys.exit()
 
+
+
 # Main program
 game_continue = True
 while game_continue:
@@ -322,4 +344,3 @@ while game_continue:
 
     # Reset the game_continue flag
     game_continue = True
-

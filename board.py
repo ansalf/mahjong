@@ -18,6 +18,7 @@ class Tile:
         self.img = img
 
 
+
 class Operation:
     def __init__(self, op_type, tile, list_pos=None):
         '''
