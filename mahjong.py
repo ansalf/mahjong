@@ -4,6 +4,10 @@ import sys
 from board import Board  # Replace 'board' with the actual name of your module
 from pygame import time as pygame_time
 import pygame.mixer
+from OpenGL.GL import *
+from OpenGL.GLUT import *
+from OpenGL.GLU import *
+# import os
 
 
 # Pygame initialization
@@ -29,14 +33,15 @@ sub_title = pygame.font.Font("./font/Montserrat-SemiBold.ttf", 35)
 font = pygame.font.Font("./font/Montserrat-Regular.ttf", 20)
 fontjam = pygame.font.Font("./font/Montserrat-SemiBold.ttf", 20)
 fontisi = pygame.font.Font("./font/Montserrat-SemiBold.ttf", 18)
+fontcr = pygame.font.Font("./font/Montserrat-SemiBold.ttf", 16)
+fontisicr = pygame.font.Font("./font/Montserrat-Regular.ttf", 16)
 
 click_sound = pygame.mixer.Sound("./sound/mouse-click.mp3")
 game_over = pygame.mixer.Sound("./sound/game-over.wav")
 good_job= pygame.mixer.Sound("./sound/good-job.wav")
 pygame.mixer.music.load('./sound/backsound.mp3')
 pygame.mixer.music.set_volume(0.5)
-
-
+    
 # Function to draw text on the screen
 def draw_text(text, font, color, surface, x, y):
     text_obj = font.render(text, True, color)
@@ -131,6 +136,7 @@ def run_mahjong_game():
                                 if position[0] >= REPLAY_POS[0] and position[0] <= REPLAY_POS[0] + REPLAY[0] and \
                                         position[1] >= REPLAY_POS[1] and position[1] <= REPLAY_POS[1] + REPLAY[1]:
                                     restart = True
+                                    pygame.mixer.music.rewind()
                                     break
                                 if position[0] >= UNDO_POS[0] and position[0] <= UNDO_POS[0] + UNDO[0] and \
                                         position[1] >= UNDO_POS[1] and position[1] <= UNDO_POS[1] + UNDO[1]:
@@ -150,6 +156,7 @@ def run_mahjong_game():
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
                         restart = True
+                        pygame.mixer.music.rewind()
                     elif event.key == pygame.K_u:
                         board.undo()
                     elif event.key == pygame.K_h:
@@ -174,10 +181,10 @@ def run_mahjong_game():
 
             pygame.display.update()
 
-        pygame.mixer.music.stop()
 
         if restart:
             continue
+        pygame.mixer.music.stop()
 
         if status == 1:
             screen.blit(success, ((SCREEN_WIDTH - success.get_width()) // 2, (SCREEN_HEIGHT - success.get_height()) // 2))
@@ -214,6 +221,26 @@ def run_mahjong_game():
                         status = -1 
                         break
 
+def draw_rect(screen, color, rect_dimensions, border_radius=0):
+    x, y, width, height = rect_dimensions
+    
+    pygame.draw.polygon(screen, color, [
+        (x + border_radius, y),
+        (x + width - border_radius, y),
+        (x + width, y + border_radius),
+        (x + width, y + height - border_radius),
+        (x + width - border_radius, y + height),
+        (x + border_radius, y + height),
+        (x, y + height - border_radius),
+        (x, y + border_radius)
+    ])
+    
+    if border_radius > 0:
+        pygame.draw.circle(screen, color, (x + border_radius, y + border_radius), border_radius)
+        pygame.draw.circle(screen, color, (x + width - border_radius, y + border_radius), border_radius)
+        pygame.draw.circle(screen, color, (x + width - border_radius, y + height - border_radius), border_radius)
+        pygame.draw.circle(screen, color, (x + border_radius, y + height - border_radius), border_radius)
+
 def show_instructions():
     SCREEN_SIZE = 980, 650
 
@@ -224,13 +251,17 @@ def show_instructions():
     show_instructions = True
 
     home2 = pygame.image.load('./res/home.png')  # 60, 60
-    papan= pygame.image.load('./res/papan_instruksi.png')  # 60, 60
+    # papan = pygame.image.load('./res/papan_instruksi.png')  # 60, 60
+    selanjutnya= pygame.image.load('./res/kayu.png')
 
-    HOME2 = [60,60]
+    HOME2 = [60, 60]
     HOME2_POS = [915, 38]
 
-    PAPAN = [335, 186]
-    PAPAN_POS = [35, 115]
+    # PAPAN = [335, 186]
+    # PAPAN_POS = [35, 115]
+
+    SELANJUTNYA = [133, 30]
+    SELANJUTNYA_POS = [770, 548]
 
     while show_instructions:
 
@@ -254,16 +285,136 @@ def show_instructions():
                     position = pygame.mouse.get_pos()
                     if position[0] >= HOME2_POS[0] and position[0] <= HOME2_POS[0] + HOME2[0] and \
                         position[1] >= HOME2_POS[1] and position[1] <= HOME2_POS[1] + HOME2[1]:
-                            return show_home_screen() 
+                            return show_home_screen()
                             break
+                    if position[0] >= SELANJUTNYA_POS[0] and position[0] <= SELANJUTNYA_POS[0] + SELANJUTNYA[0] and \
+                                        position[1] >= SELANJUTNYA_POS[1] and position[1] <= SELANJUTNYA_POS[1] + SELANJUTNYA[1]:
+                                    show_instructions2()
+                                    break
 
         screen.fill(0)
         screen.blit(background, (0, 0))
         screen.blit(home2, (HOME2_POS[0], HOME2_POS[1]))
-        screen.blit(papan, (PAPAN_POS[0], PAPAN_POS[1]))
+        # screen.blit(papan, (PAPAN_POS[0], PAPAN_POS[1]))
+        # pygame.draw.rect(screen, (248, 249, 223), (70, 120, 860, 490), border_radius=20)
+        draw_rect(screen, (172,180,156), (55, 120, 860, 510), border_radius=20)
+        draw_rect(screen, (248, 249, 223), (65, 120, 860, 490), border_radius=20)
+        screen.blit(selanjutnya, (SELANJUTNYA_POS[0], SELANJUTNYA_POS[1]))
 
-        draw_text(f"Instruksi", title, BLACK, screen, 380, 40)
-        draw_text("Cara Bermain", font, BLACK, screen, 200, 200)
+        draw_text("Instruksi", title, BLACK, screen, 380, 40)
+        draw_text("Cara Bermain", fontjam, BLACK, screen, 400, 160)
+        draw_text("Selanjutnya", fontisi, BLACK, screen, 785, 553)
+
+        # Teks untuk instruksi cara bermain
+        instructions_text = [
+            "1. Untuk memulai permainan, klik tombol 'Mulai' pada menu utama.",
+            "Selanjutnya pengguna akan diarahkan ke dalam permainan mahjong.",
+            "2. Pada permainan ini, klik dua tile yang sama dengan urutan dari atas.",
+            "Jika tidak ada tile yang sama, gunakan tombol 'Acak' untuk",
+            "mengganti susunan tile. Jika tile sama, jumlah tiles pada layar akan berkurang.",
+            "Jika tiles sudah habis maka game berhasil dimainkan (Menang).",
+            "3. Permainan memiliki batasan waktu 10 menit. Jika waktu habis sebelum",
+            "menyelesaikan permainan, maka permainan dianggap kalah (Game Over).",
+            "Waktu permainan terlihat di pojok kiri bawah.",
+            "4. Untuk memahami permainan secara detail, dapat dilihat pada instruksi",
+            "di menu utama."
+        ]
+
+        # Draw the instruction text
+        y_offset = 210
+        for instruction_line in instructions_text:
+            draw_text(instruction_line, font, BLACK, screen, 110, y_offset)
+            y_offset += 30
+
+        pygame.display.flip()
+
+    # Ensure that the event queue is empty before exiting the function
+    pygame.event.clear()
+
+def show_instructions2():
+    SCREEN_SIZE = 980, 650
+
+    pygame.init()
+    screen = pygame.display.set_mode(SCREEN_SIZE)
+    pygame.display.set_caption('Mahjong')
+
+    show_instructions2= True
+
+    home3 = pygame.image.load('./res/home.png')  # 60, 60
+    # papan = pygame.image.load('./res/papan_instruksi.png')  # 60, 60
+    sebelumnya= pygame.image.load('./res/kayu.png')
+
+    HOME3 = [60, 60]
+    HOME3_POS = [915, 38]
+
+    # PAPAN = [335, 186]
+    # PAPAN_POS = [35, 115]
+
+    SEBELUMNYA = [133, 30]
+    SEBELUMNYA_POS = [110, 548]
+
+    while show_instructions2:
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_h:
+                    show_home_screen()
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                click_sound.play()
+                # Check if the mouse is clicked in a specific area to exit
+                # if 690 < mouse_x < 780 and -10 < mouse_y < 20:
+                #     show_instructions = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    position = pygame.mouse.get_pos()
+                    if position[0] >= HOME3_POS[0] and position[0] <= HOME3_POS[0] + HOME3[0] and \
+                        position[1] >= HOME3_POS[1] and position[1] <= HOME3_POS[1] + HOME3[1]:
+                            return show_home_screen()
+                            break
+                    if position[0] >= SEBELUMNYA_POS[0] and position[0] <= SEBELUMNYA_POS[0] + SEBELUMNYA[0] and \
+                        position[1] >= SEBELUMNYA_POS[1] and position[1] <= SEBELUMNYA_POS[1] + SEBELUMNYA[1]:
+                            show_instructions()
+                            break
+
+        screen.fill(0)
+        screen.blit(background, (0, 0))
+        screen.blit(home3, (HOME3_POS[0], HOME3_POS[1]))
+        # screen.blit(papan, (PAPAN_POS[0], PAPAN_POS[1]))
+        draw_rect(screen, (172,180,156), (55, 120, 860, 510), border_radius=20)
+        draw_rect(screen, (248, 249, 223), (65, 120, 860, 490), border_radius=20)
+        screen.blit(sebelumnya, (SEBELUMNYA_POS[0], SEBELUMNYA_POS[1]))
+
+        draw_text("Instruksi", title, BLACK, screen, 380, 40)
+        draw_text("Informasi Tombol", fontjam, BLACK, screen, 400, 160)
+        draw_text("Sebelumnya", fontisi, BLACK, screen, 120, 553)
+
+        # Teks untuk instruksi cara bermain
+        instructions_text = [
+            "Mulai: Memulai permainan. Tekan M, Enter, atau Space Bar pada keyboard.",
+            "Instruksi: Melihat instruksi permainan. Tekan I pada keyboard.",
+            "Mulai Ulang: Mereset atau memulai ulang permainan. Tekan R pada keyboard.",
+            "Acak: Mengganti susunan tile secara acak. Tekan S pada keyboard.",
+            "Undo: Kembali ke langkah sebelumnya. Gunakan tombol Undo atau tekan ",
+            "              U pada keyboard.",
+            "Home: Kembali ke menu utama. Gunakan tombol dengan ikon Home atau",
+            "              tekan H pada keyboard.",
+            "Keluar: Keluar dari permainan. Klik tombol keluar atau tekan ESC pada keyboard.",
+        ]
+
+        # Draw the instruction text
+        y_offset = 210
+        for instruction_line in instructions_text:
+            draw_text(instruction_line, font, BLACK, screen, 110, y_offset)
+            y_offset += 30
+
+        draw_text("Copy Right © - TI 2022 A", fontcr, BLACK, screen, 390, 495)
+        draw_text("Adelia Miftakul J, Anissa Alifia P, Adinda Salsa L", fontisicr, BLACK, screen, 320, 515)
 
         pygame.display.flip()
 
@@ -303,19 +454,13 @@ def show_home_screen():
     # Use clock to control the fade-in speed
     clock = pygame.time.Clock()
 
-    start_time = pygame.time.get_ticks()  
-
+    start_time = pygame.time.get_ticks()
+    
     # Main loop for fade-in animation
-    # ... (previous code)
-
-# Main loop for fade-in animation
     fading_in = True
     fade_animation_completed = False  # Flag to track whether fade-in animation is completed
 
     while fading_in:
-        screen.fill(0)
-        screen.blit(background, (0, 0))
-
         screen.fill(0)
         screen.blit(background, (0, 0))
 
@@ -347,6 +492,8 @@ def show_home_screen():
             papantitle.set_alpha(alpha_papantitle)
             screen.blit(papantitle, (PAPANTITLE_POS[0], PAPANTITLE_POS[1]))
             draw_text("Selamat Datang di Game Mahjong", title, BLACK, screen, 135, 130)
+
+            draw_text("Copy Right © - TI 2022 A", fontcr, BLACK, screen, 425, 620)
 
             # Update display
             pygame.display.flip()
@@ -392,15 +539,18 @@ def show_home_screen():
                     pygame.quit()
                     sys.exit()
 
-
 # Main program
-game_continue = True
-while game_continue:
-    mode = show_home_screen()
+if __name__ == "__main__":
 
-    if mode:
-        run_mahjong_game()
-        # Handle anything you need after the Mahjong game loop here
-
-    # Reset the game_continue flag
+    # show_home_screen()
     game_continue = True
+    
+    while game_continue:
+        mode = show_home_screen()
+
+        if mode:
+            run_mahjong_game()
+            # Handle anything you need after the Mahjong game loop here
+
+        # Reset the game_continue flag
+        game_continue = True
